@@ -10,9 +10,16 @@ To simplify adding any files to Quik.
 - The application has to be restarted for the files to be visible. 
 - Thumbnails are not displayed in Media View
 - !! It may break your GoPro Quik Database and you might not be able to open Quik any more. 
+
 # Usage
 
-    npx add-quik-video IMG_1337.mp4
+    $ npx add-quik-video <videofile>  <videofile>…
+
+  Examples
+  
+    $ npx add-quik-video IMG_1337.mp4 
+    $ npx add-quik-video videos/IMG_1337.mp4 *.mov
+        
 
 # Q&A
 
