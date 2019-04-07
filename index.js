@@ -68,10 +68,10 @@ async function getExifTagsSafely(filename) {
 		const exifTags = await exiftool.read(filename)
 		if (!exifTags.MediaCreateDate) {
 			return null
-		} else {
-			return exifTags
 		}
-	} catch (e) {
+
+		return exifTags
+	} catch (error) {
 		return null
 	}
 }
@@ -80,25 +80,30 @@ async function handleFile(db, filename) {
 	if (await isAlreadyInserted(db, filename)) {
 		console.warn(`File ${filename} is already in media database`)
 	} else {
-		let exifTags = await getExifTagsSafely(filename);
+		const exifTags = await getExifTagsSafely(filename)
 		if (exifTags) {
 			await insertMedia(db, filename, exifTags)
 			console.log(`Added ${filename}`)
 		} else {
 			console.error(`WARN: File ${filename} does not look like a video file`)
 		}
-
 	}
 }
 
-async function main(filenames) {
-	const filenamesFiltered = filenames.filter(filename => fs.statSync(filename).isFile())
+function checkFilesExist(filenamesFiltered) {
 	filenamesFiltered
 		.filter(filename => !fs.existsSync(filename))
 		.forEach(filename => {
 			console.error('file not found:', filename)
 			process.exit(3)
 		})
+}
+
+async function main(filenames) {
+	const filenamesFiltered = filenames.filter(filename =>
+		fs.statSync(filename).isFile()
+	)
+	checkFilesExist(filenamesFiltered);
 
 	let db = null
 	try {
@@ -108,9 +113,12 @@ async function main(filenames) {
 		)
 		db = await sqlite.open(dbFile, {Promise})
 
-		const absoluteFilenames = filenamesFiltered.map(filename => path.resolve(filename))
-		await Promise.all(absoluteFilenames.map(async filename =>
-			await handleFile(db, filename)))
+		const absoluteFilenames = filenamesFiltered.map(filename =>
+			path.resolve(filename)
+		)
+		await Promise.all(
+			absoluteFilenames.map(filename => handleFile(db, filename))
+		)
 	} finally {
 		if (db) {
 			await db.close()
@@ -120,7 +128,7 @@ async function main(filenames) {
 	}
 }
 
-if (typeof require !== 'undefined' && require.main == module) {
+if (typeof require !== 'undefined' && require.main === module) {
 	if (!cli.input[0]) {
 		cli.showHelp()
 	}
