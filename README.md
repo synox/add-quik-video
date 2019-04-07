@@ -1,5 +1,7 @@
 > CLI to add videos to the GoPro Quik Desktop for Mac app. 
 
+This is not an official GoPro product, and is not affiliated with, or sponsored or endorsed by, GoPro.
+
 # Why?
 So simplify adding files to Quik. 
 
@@ -21,7 +23,7 @@ Yes, you can with this tool.
 It adds the file directly into the Quik database. 
 
 ### Is it safe to use?
-Not really. You might lose your files or creations.
+Not really. You might lose your files or creations. Use at your own risk.
 
  ### Quik does not start any more. What can I do?
 Force-Quit Quik and delete the file: 
