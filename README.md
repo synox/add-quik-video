@@ -6,7 +6,7 @@ This is not an official GoPro product, and is not affiliated with, or sponsored 
 To simplify adding any files to Quik.  
 
 # Caveats
-- Only works on MacOs
+- Only works on macOS
 - The application has to be restarted for the files to be visible. 
 - Thumbnails are not displayed in Media View
 - !! It may break your GoPro Quik Database and you might not be able to open Quik any more. 
