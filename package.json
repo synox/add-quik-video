@@ -18,5 +18,23 @@
     "shelljs": "^0.8.3",
     "sqlite": "^3.0.3",
     "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "xo": "^0.24.0"
+  },
+  "xo": {
+    "semicolon": false,
+    "prettier": true,
+    "rules": {
+      "no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_"
+        }
+      ]
+    }
+  },
+  "engines": {
+    "node": "10.x"
   }
 }
