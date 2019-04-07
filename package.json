@@ -1,7 +1,7 @@
 {
   "name": "video-adder-quik",
   "version": "1.0.0",
-  "description": "",
+  "description": "CLI to add videos to the GoPro Quik Desktop for Mac app",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
