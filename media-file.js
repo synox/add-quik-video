@@ -2,22 +2,21 @@ const {exiftool} = require('exiftool-vendored')
 
 class MediaFile {
 	constructor(filename, exifTags) {
-		this.filename = filename;
-		this.exifTags = exifTags;
+		this.filename = filename
+		this.exifTags = exifTags
 	}
 
 	isValid() {
-		return !!this.exifTags
+		return Boolean(this.exifTags)
 	}
 
 	static async load(filename) {
 		const exifTags = await this.getExifTagsSafely(filename)
 		if (exifTags) {
-			return new MediaFile(filename, exifTags);
-		} else {
-			return new MediaFile(filename, null);
+			return new MediaFile(filename, exifTags)
 		}
 
+		return new MediaFile(filename, null)
 	}
 
 	static async end() {
@@ -30,12 +29,12 @@ class MediaFile {
 			if (!exifTags.MediaCreateDate) {
 				return null
 			}
+
 			return exifTags
 		} catch (error) {
 			return null
 		}
 	}
-
 }
 
-module.exports = MediaFile;
+module.exports = MediaFile

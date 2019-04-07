@@ -2,13 +2,9 @@
 'use strict'
 const path = require('path')
 const fs = require('fs')
-const sqlite = require('sqlite')
 const meow = require('meow')
-const uuidv1 = require('uuid/v1')
-const {exiftool} = require('exiftool-vendored')
-const platformFolders = require('platform-folders')
-const GoProMedia = require('./goproMedia')
-const MediaFile = require('./mediaFile')
+const GoProMedia = require('./gopro-media')
+const MediaFile = require('./media-file')
 
 const cli = meow(
 	`
@@ -40,73 +36,71 @@ function ignoreDirectories(filenames) {
 	const filenamesFiltered = filenames.filter(filename =>
 		fs.statSync(filename).isFile()
 	)
-	return filenamesFiltered;
+	return filenamesFiltered
 }
 
 async function getAndVerifyFiles(filenames) {
-	// stop if file does not exist
-	checkFilesExist(filenames);
+	// Stop if file does not exist
+	checkFilesExist(filenames)
 
 	const promises = ignoreDirectories(filenames)
 		.map(filename => {
-			// make path absolute
+			// Make path absolute
 			return path.resolve(filename)
 		})
-		.map(async filename =>
-			MediaFile.load(filename))
+		.map(async filename => MediaFile.load(filename))
 
 	return Promise.all(promises)
 }
 
 async function getMetadataAndLogErrors(filenames) {
-	const files = await getAndVerifyFiles(filenames);
+	const files = await getAndVerifyFiles(filenames)
 
 	files
 		.filter(file => !file.isValid())
 		.forEach(file =>
-			console.error(`WARN: File ${file.filename} does not look like a video file`)
+			console.error(
+				`WARN: File ${file.filename} does not look like a video file`
+			)
 		)
-	return files
-		.filter(file => file.isValid())
-
+	return files.filter(file => file.isValid())
 }
 
 async function init(args) {
 	if (args.length === 0) {
-		cli.showHelp(1);
+		cli.showHelp(1)
 	}
 
-	const cleanFiles = await getMetadataAndLogErrors(args);
+	const cleanFiles = await getMetadataAndLogErrors(args)
 
 	let media = null
 	try {
-		media = new GoProMedia();
+		media = new GoProMedia()
 		await media.init()
 
 		await Promise.all(
-			cleanFiles.map(file => {
-					if (!media.contains(file)) {
-						return media.add(file)
-							.catch(err => {
-								console.error(`WARN: Can not import ${file.filename}.`, err)
-							});
-					} else {
-						console.warn(`File ${file.filename} is already in media database`)
-					}
+			cleanFiles.map(async file => {
+				let containsMedia = await media.contains(file);
+				if (containsMedia) {
+					console.warn(`File ${file.filename} is already in media database`)
+					return Promise.resolve()
+				} else {
+					return media.add(file).catch(error => {
+						console.error(`WARN: Can not import ${file.filename}.`, error)
+					})
 				}
-			)
+			})
 		)
-
 	} finally {
 		if (media) {
 			media.end()
 		}
+
 		MediaFile.end()
 	}
-
 }
 
 init(cli.input).catch(error => {
-	console.error(error);
-	process.exit(1);
-});
+	console.error(error)
+	process.exit(1)
+})

@@ -4,8 +4,9 @@ const sqlite = require('sqlite')
 const uuidv1 = require('uuid/v1')
 const platformFolders = require('platform-folders')
 
-class GoProMedia {
+class GoproMedia {
 	constructor() {
+		this.db = null
 	}
 
 	async init() {
@@ -27,7 +28,7 @@ class GoProMedia {
 		const uuid = uuidv1().replace(/[-]/g, '')
 		const fileSizeInBytes = fs.statSync(mediaFile.filename).size
 
-		return db.run(
+		return this.db.run(
 			`INSERT INTO media (
                       gumi, filename, type, subtype, creation_date, 
                       import_date, size, camera_model, width, height, 
@@ -40,7 +41,7 @@ class GoProMedia {
                   ?, ?, ?, ?, ?,
                   ?, ?, ?, ?); `,
 			uuid,
-			absoluteFilename,
+			mediaFile.filename,
 			'video',
 			'video',
 			mediaFile.exifTags.MediaCreateDate.toISOString(),
@@ -62,9 +63,12 @@ class GoProMedia {
 	}
 
 	async contains(file) {
-		const rows = (await this.db).all('select * from media where filename=?', file.filename)
+		const rows = (await this.db).all(
+			'select * from media where filename=?',
+			file.filename
+		)
 		return rows.length >= 1
 	}
 }
 
-module.exports = GoProMedia;
+module.exports = GoproMedia
