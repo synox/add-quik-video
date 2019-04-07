@@ -3,7 +3,7 @@
 This is not an official GoPro product, and is not affiliated with, or sponsored or endorsed by, GoPro.
 
 # Why?
-So simplify adding files to Quik. 
+To simplify add files to Quik.  
 
 # Caveats
 - Only works on MacOs
