@@ -3,6 +3,7 @@
 const path = require('path')
 const fs = require('fs')
 const meow = require('meow')
+const logSymbols = require('log-symbols')
 const GoProMedia = require('./gopro-media')
 const MediaFile = require('./media-file')
 
@@ -27,7 +28,7 @@ function checkFilesExist(filenamesFiltered) {
 	filenamesFiltered
 		.filter(filename => !fs.existsSync(filename))
 		.forEach(filename => {
-			console.error('file not found:', filename)
+			console.error(logSymbols.error, 'file not found:', filename)
 			process.exit(3)
 		})
 }
@@ -60,6 +61,7 @@ async function getMetadataAndLogErrors(filenames) {
 		.filter(file => !file.isValid())
 		.forEach(file =>
 			console.error(
+				logSymbols.error,
 				`WARN: File ${file.filename} does not look like a video file`
 			)
 		)
@@ -82,13 +84,20 @@ async function init(args) {
 			cleanFiles.map(async file => {
 				const containsMedia = await media.contains(file)
 				if (containsMedia) {
-					console.warn(`File ${file.filename} is already in media database`)
+					console.log(logSymbols.warning, `already in media: ${file.filename}`)
 					return Promise.resolve()
 				}
 
-				return media.add(file).catch(error => {
-					console.error(`WARN: Can not import ${file.filename}.`, error)
-				})
+				return media
+					.add(file)
+					.then(() => console.log(logSymbols.success, 'added', file.filename))
+					.catch(error => {
+						console.error(
+							logSymbols.error,
+							`WARN: Can not import ${file.filename}.`,
+							error
+						)
+					})
 			})
 		)
 	} finally {
@@ -101,6 +110,6 @@ async function init(args) {
 }
 
 init(cli.input).catch(error => {
-	console.error(error)
+	console.error(logSymbols.error, error)
 	process.exit(1)
 })

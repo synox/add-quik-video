@@ -16,6 +16,7 @@
     "exif": "^0.6.0",
     "exif-date": "^2.0.1",
     "exiftool-vendored": "^8.7.1",
+    "log-symbols": "^2.2.0",
     "meow": "^5.0.0",
     "platform-folders": "^0.4.0",
     "shelljs": "^0.8.3",

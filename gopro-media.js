@@ -63,7 +63,7 @@ class GoproMedia {
 	}
 
 	async contains(file) {
-		const rows = (await this.db).all(
+		const rows = await this.db.all(
 			'select * from media where filename=?',
 			file.filename
 		)
