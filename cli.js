@@ -7,89 +7,25 @@ const meow = require('meow')
 const uuidv1 = require('uuid/v1')
 const {exiftool} = require('exiftool-vendored')
 const platformFolders = require('platform-folders')
+const GoProMedia = require('./goproMedia')
+const MediaFile = require('./mediaFile')
 
 const cli = meow(
 	`
+	Add videos to the GoPro Quik Desktop for Mac app.
+	
 	Usage
-	  $ npx add-quik-video <videofile> <videofile>…
+	  $ npx add-quik-video <videofile>
+	  $ npx add-quik-video <videofile>  <videofile>…
 
 	Examples
-	  $ npx add-quik-video videos/IMG_1337.mp4 *.mov
+	  $ npx add-quik-video videos/IMG_1337.mp4 
+	  $ npx add-quik-video *.mov
 `,
 	{
 		flags: {}
 	}
 )
-
-async function isAlreadyInserted(db, filename) {
-	const rows = await db.all('select * from media where filename=?', filename)
-	return rows.length >= 1
-}
-
-async function insertMedia(db, absoluteFilename, exifTags) {
-	const uuid = uuidv1().replace(/[-]/g, '')
-	const fileSizeInBytes = fs.statSync(absoluteFilename).size
-
-	return db.run(
-		`INSERT INTO media (
-                      gumi, filename, type, subtype, creation_date, 
-                      import_date, size, camera_model, width, height, 
-                      duration, camera_firmware_version, camera_lens_model, managed_folder, watch_folder,
-                      hilight_tags, state, updated_at, revision_number
-                  )
-                  VALUES (
-                  ?, ?, ?, ?, ?,
-                  ?, ?, ?, ?, ?,
-                  ?, ?, ?, ?, ?,
-                  ?, ?, ?, ?); `,
-		uuid,
-		absoluteFilename,
-		'video',
-		'video',
-		exifTags.MediaCreateDate.toISOString(),
-		new Date().toISOString(),
-		fileSizeInBytes,
-		'GoPro HERO7 Black Edition',
-		exifTags.ImageWidth,
-		exifTags.ImageHeight,
-		Math.trunc(exifTags.Duration),
-		'HD7.01.01.70.00',
-		'LAJ123456789012',
-		0,
-		0,
-		0,
-		0,
-		new Date().toISOString(),
-		0
-	)
-}
-
-async function getExifTagsSafely(filename) {
-	try {
-		const exifTags = await exiftool.read(filename)
-		if (!exifTags.MediaCreateDate) {
-			return null
-		}
-
-		return exifTags
-	} catch (error) {
-		return null
-	}
-}
-
-async function handleFile(db, filename) {
-	if (await isAlreadyInserted(db, filename)) {
-		console.warn(`File ${filename} is already in media database`)
-	} else {
-		const exifTags = await getExifTagsSafely(filename)
-		if (exifTags) {
-			await insertMedia(db, filename, exifTags)
-			console.log(`Added ${filename}`)
-		} else {
-			console.error(`WARN: File ${filename} does not look like a video file`)
-		}
-	}
-}
 
 function checkFilesExist(filenamesFiltered) {
 	filenamesFiltered
@@ -100,39 +36,77 @@ function checkFilesExist(filenamesFiltered) {
 		})
 }
 
-async function main(filenames) {
+function ignoreDirectories(filenames) {
 	const filenamesFiltered = filenames.filter(filename =>
 		fs.statSync(filename).isFile()
 	)
-	checkFilesExist(filenamesFiltered);
+	return filenamesFiltered;
+}
 
-	let db = null
+async function getAndVerifyFiles(filenames) {
+	// stop if file does not exist
+	checkFilesExist(filenames);
+
+	const promises = ignoreDirectories(filenames)
+		.map(filename => {
+			// make path absolute
+			return path.resolve(filename)
+		})
+		.map(async filename =>
+			MediaFile.load(filename))
+
+	return Promise.all(promises)
+}
+
+async function getMetadataAndLogErrors(filenames) {
+	const files = await getAndVerifyFiles(filenames);
+
+	files
+		.filter(file => !file.isValid())
+		.forEach(file =>
+			console.error(`WARN: File ${file.filename} does not look like a video file`)
+		)
+	return files
+		.filter(file => file.isValid())
+
+}
+
+async function init(args) {
+	if (args.length === 0) {
+		cli.showHelp(1);
+	}
+
+	const cleanFiles = await getMetadataAndLogErrors(args);
+
+	let media = null
 	try {
-		const dbFile = path.join(
-			platformFolders.getDataHome(),
-			'com.GoPro.goproapp.GoProMediaService/Databases/media.db'
-		)
-		db = await sqlite.open(dbFile, {Promise})
+		media = new GoProMedia();
+		await media.init()
 
-		const absoluteFilenames = filenamesFiltered.map(filename =>
-			path.resolve(filename)
-		)
 		await Promise.all(
-			absoluteFilenames.map(filename => handleFile(db, filename))
+			cleanFiles.map(file => {
+					if (!media.contains(file)) {
+						return media.add(file)
+							.catch(err => {
+								console.error(`WARN: Can not import ${file.filename}.`, err)
+							});
+					} else {
+						console.warn(`File ${file.filename} is already in media database`)
+					}
+				}
+			)
 		)
+
 	} finally {
-		if (db) {
-			await db.close()
+		if (media) {
+			media.end()
 		}
-
-		await exiftool.end()
-	}
-}
-
-if (typeof require !== 'undefined' && require.main === module) {
-	if (!cli.input[0]) {
-		cli.showHelp()
+		MediaFile.end()
 	}
 
-	main(cli.input)
 }
+
+init(cli.input).catch(error => {
+	console.error(error);
+	process.exit(1);
+});
