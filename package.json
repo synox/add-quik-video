@@ -1,14 +1,17 @@
 {
   "name": "add-quik-video",
   "version": "0.0.1",
-  "description": "CLI to add videos to the GoPro Quik Desktop for Mac app",
-  "main": "./index.js",
+  "description": "CLI to add videos to the GoPro Quik Desktop application for MacOs",
+  "main": "./cli.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": ""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "bin": "./cli.js",
+  "keywords": [
+    "gopro"
+  ],
+  "author": "synox",
+  "license": "MIT",
   "dependencies": {
     "exif": "^0.6.0",
     "exif-date": "^2.0.1",
@@ -23,7 +26,6 @@
     "type": "git",
     "url": "https://github.com/synox/add-quik-video.git"
   },
-  "license": "MIT",
   "devDependencies": {
     "xo": "^0.24.0"
   },
@@ -40,6 +42,6 @@
     }
   },
   "engines": {
-    "node": "10.x"
+    "node": ">=8"
   }
 }
