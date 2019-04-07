@@ -80,15 +80,15 @@ async function init(args) {
 
 		await Promise.all(
 			cleanFiles.map(async file => {
-				let containsMedia = await media.contains(file);
+				const containsMedia = await media.contains(file)
 				if (containsMedia) {
 					console.warn(`File ${file.filename} is already in media database`)
 					return Promise.resolve()
-				} else {
-					return media.add(file).catch(error => {
-						console.error(`WARN: Can not import ${file.filename}.`, error)
-					})
 				}
+
+				return media.add(file).catch(error => {
+					console.error(`WARN: Can not import ${file.filename}.`, error)
+				})
 			})
 		)
 	} finally {
