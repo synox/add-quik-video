@@ -1,6 +1,6 @@
 {
   "name": "add-quik-video",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI to add videos to the GoPro Quik Desktop application for MacOs",
   "main": "./cli.js",
   "scripts": {
