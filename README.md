@@ -12,7 +12,7 @@ To simplify add files to Quik.
 - !! It may break your GoPro Quik Database and you might not be able to open Quik any more. 
 # Usage
 
-npx add-quik-video IMG_1337.mp4
+    npx add-quik-video IMG_1337.mp4
 
 # Q&A
 
