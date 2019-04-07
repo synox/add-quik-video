@@ -100,6 +100,12 @@ async function init(args) {
 					})
 			})
 		)
+
+		console.log(
+			'\n',
+			logSymbols.info,
+			'Remember to restart GoPro Quik to see the new media.'
+		)
 	} finally {
 		if (media) {
 			media.end()
