@@ -32,7 +32,7 @@ It adds the file directly into the Quik database.
 ### Is it safe to use?
 Not really. You might lose your files or creations. Use at your own risk.
 
- ### Quik does not start any more. What can I do?
+### Quik does not start any more. What can I do?
 Force-Quit Quik and delete the file: 
 
     /Users/#USER#/Library/Application Support/com.GoPro.goproapp.GoProMediaService/Databases/media.db
